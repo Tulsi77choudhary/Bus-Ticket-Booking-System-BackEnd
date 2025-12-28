@@ -1,5 +1,6 @@
 package com.example.OnlineTicket.DTO;
 
+import com.example.OnlineTicket.model.Bus;
 import lombok.Data;
 
 import java.util.List;
@@ -9,9 +10,4 @@ public class SeatSelectionRequest {
     private String busNumber;
     private List<String> seatNumbers;
 
-
-//    public SeatSelectionRequest(String busNumber,List<String> seatNumbers){
-//        this.busNumber = busNumber;
-//        this.seatNumbers = seatNumbers;
-//    }
 }

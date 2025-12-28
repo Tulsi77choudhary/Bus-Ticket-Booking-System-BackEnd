@@ -38,17 +38,16 @@ public class SeatController {
         List<SeatDto> seats = seatService.getSeatsByBus(busNumber);
         return ResponseEntity.ok(seats);
     }
-
     @PostMapping("/select")
     public ResponseEntity<List<SeatDto>> selectSeats(
             @RequestBody SeatSelectionRequest request) {
 
         return ResponseEntity.ok(
-                seatService.selectSeats(request.getBusNumber(), request.getSeatNumbers())
+                seatService.selectSeats(
+                        request.getBusNumber(),
+                        request.getSeatNumbers())
         );
     }
-
-
     @PostMapping
     public ResponseEntity<SeatDto> createSeat(@RequestBody SeatDto seatDto) {
         SeatDto created = seatService.createSeat(seatDto);

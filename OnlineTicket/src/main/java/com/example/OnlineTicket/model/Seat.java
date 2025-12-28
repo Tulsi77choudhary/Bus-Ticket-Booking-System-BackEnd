@@ -22,9 +22,9 @@ public class Seat {
     @Column(name = "seat_number")
     private String seatNumber;
 
-    @Enumerated(EnumType.STRING)
+    private boolean available;
     @Column(name = "seat_type")
-    private SeatType seatType;
+    private String seatType;
 
     private double price;
 

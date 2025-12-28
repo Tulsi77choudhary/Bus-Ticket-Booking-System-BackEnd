@@ -58,7 +58,7 @@ public class BusController {
                         bus.getSeats().stream()
                                 .map(seat -> new SeatDto(
                                         seat.getSeatNumber(),
-                                        seat.getSeatType().name(),
+                                        seat.getSeatType(),
                                         seat.getPrice(),
                                         seat.getBus().getBusNumber()
 

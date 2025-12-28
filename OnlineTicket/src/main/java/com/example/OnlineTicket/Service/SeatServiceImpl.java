@@ -5,7 +5,6 @@ import com.example.OnlineTicket.Repository.BusRepository;
 import com.example.OnlineTicket.Repository.SeatRepository;
 import com.example.OnlineTicket.model.Bus;
 import com.example.OnlineTicket.model.Seat;
-import com.example.OnlineTicket.model.SeatType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,8 +26,12 @@ public class SeatServiceImpl implements SeatService {
     private SeatDto mapToDto(Seat seat) {
         SeatDto dto = new SeatDto();
         dto.setSeatNumber(seat.getSeatNumber());
-        dto.setSeatType(seat.getSeatType().name());
-
+        if (seat.getSeatType() != null) {
+            dto.setSeatType(seat.getSeatType().toUpperCase());
+        } else {
+            dto.setSeatType(null);
+        }
+        dto.setPrice(seat.getPrice());
         dto.setBusNumber(seat.getBus().getBusNumber());
         return dto;
     }
@@ -37,9 +40,7 @@ public class SeatServiceImpl implements SeatService {
     private Seat mapToEntity(SeatDto dto) {
         Seat seat = new Seat();
         seat.setSeatNumber(dto.getSeatNumber());
-        seat.setSeatType(
-                SeatType.valueOf(dto.getSeatType().toUpperCase())
-        );
+        seat.setSeatType(dto.getSeatType().toUpperCase());
         Bus bus = busRepository.findByBusNumber(dto.getBusNumber())
                 .orElseThrow(() -> new RuntimeException("Bus not found: " + dto.getBusNumber()));
         seat.setBus(bus);
@@ -67,14 +68,13 @@ public class SeatServiceImpl implements SeatService {
 
         Seat seat = new Seat();
         seat.setSeatNumber(seatDto.getSeatNumber());
-        seat.setSeatType(SeatType.valueOf(seatDto.getSeatType().toUpperCase()));
         seat.setPrice(seat.getPrice());
         seat.setBus(bus);
         Seat saved = seatRepository.save(seat);
 
         return new SeatDto(
                 saved.getSeatNumber(),
-                saved.getSeatType().name(),
+                saved.getSeatType(),
                 saved.getPrice(),
                 bus.getBusNumber()
         );
@@ -94,9 +94,7 @@ public class SeatServiceImpl implements SeatService {
                 .orElseThrow(() -> new RuntimeException("Seat not found"));
 
         if (seatDto.getSeatType() != null){
-            seat.setSeatType(
-                    SeatType.valueOf(seatDto.getSeatType().toUpperCase())
-            );
+            seat.setSeatType(seatDto.getSeatType().toUpperCase());
         }
         seat.setSeatNumber(seatDto.getSeatNumber());
         seat.setPrice(seatDto.getPrice());
@@ -105,7 +103,7 @@ public class SeatServiceImpl implements SeatService {
 
         return new SeatDto(
                 updated.getSeatNumber(),
-                updated.getSeatType().name(),
+                updated.getSeatType(),
                 updated.getPrice(),
                 updated.getBus().getBusNumber()
         );
@@ -117,16 +115,38 @@ public class SeatServiceImpl implements SeatService {
     }
 
     @Override
+    @Transactional
     public List<SeatDto> selectSeats(String busNumber, List<String> seatNumbers) {
-        return null;
+
+        List<Seat> seats = seatRepository
+                .findByBus_BusNumberAndSeatNumberIn(busNumber, seatNumbers);
+
+        if (seats.isEmpty()) {
+            throw new RuntimeException("Seats not found");
+        }
+        for (Seat seat : seats) {
+            if (!seat.isAvailable()) {
+                throw new RuntimeException(
+                        "Seat already booked: " + seat.getSeatNumber()
+                );
+            }
+            seat.setAvailable(false);
+        }
+        seatRepository.saveAll(seats);
+
+        return seats.stream()
+                .map(this::mapToDto)
+                .toList();
     }
+
 
     @Override
     public List<SeatDto> getSeatsByBus(String busNumber) {
         Bus bus = busRepository.findByBusNumber(busNumber)
                 .orElseThrow(()-> new RuntimeException("Bus not found"));
 
-        return seatRepository.findByBus(bus).stream()
+        return seatRepository.findByBus(bus)
+                .stream()
                 .map(this::mapToDto)
                 .toList();
     }

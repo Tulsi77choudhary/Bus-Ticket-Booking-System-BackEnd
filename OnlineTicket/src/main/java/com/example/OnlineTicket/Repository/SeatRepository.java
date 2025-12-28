@@ -14,5 +14,9 @@ public interface SeatRepository extends JpaRepository<Seat,Long> {
     List<Seat> findByBus(Bus bus);
     Optional<Seat> findBySeatNumberAndBus(String seatNumber, Bus bus);
 
-   List<Seat> findByBusAndSeatNumberIn(Bus bus, List<String> seatNumbers);
+    List<Seat> findByBus_BusNumberAndSeatNumberIn(
+            String busNumber,
+            List<String> seatNumbers
+    );
+
 }

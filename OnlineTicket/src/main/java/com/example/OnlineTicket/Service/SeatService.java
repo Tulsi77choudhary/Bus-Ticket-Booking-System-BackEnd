@@ -5,8 +5,6 @@ import java.util.List;
 
 public interface SeatService {
     List<SeatDto> getAllSeat();
-
-
     SeatDto createSeat(SeatDto seatDto);
     SeatDto toggleSeatAvailability(String seatNumber);
     SeatDto updateSeat(String busNumber,String seatNumber, SeatDto seatDto);
