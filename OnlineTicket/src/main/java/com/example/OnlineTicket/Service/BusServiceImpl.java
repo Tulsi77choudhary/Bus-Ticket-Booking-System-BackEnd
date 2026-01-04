@@ -1,139 +1,150 @@
 package com.example.OnlineTicket.Service;
 
 import com.example.OnlineTicket.DTO.BusDTO;
+import com.example.OnlineTicket.DTO.BusResponseDTO;
 import com.example.OnlineTicket.DTO.SeatDto;
+import com.example.OnlineTicket.Excaption.ResourceNotFoundException;
 import com.example.OnlineTicket.Repository.BusRepository;
 import com.example.OnlineTicket.model.Bus;
-import com.example.OnlineTicket.model.Seat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
 public class BusServiceImpl implements BusService{
     @Autowired
     private BusRepository  busRepository;
-    @Override
-    public Bus addBus(Bus bus) {
-        List<Seat> seats = new ArrayList<>();
-        String[] rows = {"A", "B", "C"};
-        int seatsPerRow = 10;
 
-        for (String row : rows) {
-            for (int i = 1; i <= seatsPerRow; i++) {
-                Seat seat = new Seat();
-                seat.setSeatNumber(row + i);
-                seat.setPrice(800);
-                seat.setBus(bus);
-                seats.add(seat);
-            }
+    @Override
+    public Bus addBus(BusDTO busDto) {
+
+        if (busRepository.existsByBusNumber(busDto.getBusNumber())) {
+            throw new RuntimeException("Bus with this number already exists");
         }
 
-        bus.setSeats(seats);
-        bus.setTotalSeats(seats.size());
+       Bus bus = new Bus();
+       bus.setBusName(busDto.getBusName());
+       bus.setBusNumber(busDto.getBusNumber());
+       bus.setSource(busDto.getSource());
+       bus.setDestination(busDto.getDestination());
+       bus.setBusType(busDto.getBusType());
+       bus.setTotalSeats(busDto.getTotalSeats());
+       bus.setTime(busDto.getDepartureTime());
 
         return busRepository.save(bus);
-    }
-    public BusDTO mapToBusDto(Bus bus) {
-        BusDTO dto = new BusDTO();
-        dto.setId(bus.getId());
-        dto.setBusNumber(bus.getBusNumber());
-        dto.setSource(bus.getSource());
-        dto.setDestination(bus.getDestination());
-        dto.setDate(bus.getDate());
-        dto.setTime(bus.getTime());
-        dto.setTotalSeats(bus.getTotalSeats());
-
-        List<SeatDto> seatDtos = bus.getSeats().stream().map(seat -> {
-            SeatDto s = new SeatDto();
-            s.setSeatNumber(seat.getSeatNumber());
-            s.setPrice(seat.getPrice());
-            return s;
-        }).toList();
-
-        dto.setSeats(seatDtos);
-        return dto;
     }
 
     @Override
     public List<Bus> searchBuses(String busNumber, String source, String destination) {
-        if (busNumber != null && !busNumber.isEmpty()) {
-            return busRepository.findByBusNumber(busNumber)
-                    .map(List::of)
-                    .orElse(List.of());
-        } else if (source != null && destination != null) {
-            return busRepository.findBySourceAndDestination(source, destination);
-        } else if (source != null) {
-            return busRepository.findBySource(source);
-        } else if (destination != null) {
-            return busRepository.findByDestination(destination);
-        } else {
-            return busRepository.findAll();
-        }
+        busNumber = (busNumber != null && !busNumber.isBlank()) ? busNumber.trim() : null;
+        source = (source != null && !source.isBlank()) ? source.trim() : null;
+        destination = (destination != null && !destination.isBlank()) ? destination.trim() : null;
+
+        return busRepository.searchBuses(busNumber,source,destination);
     }
+
     @Override
-    public BusDTO updateBus(String busNumber, BusDTO busDTO) {
-        Bus existingBus = busRepository.findByBusNumber(busNumber)
-                .orElseThrow(() -> new RuntimeException("Bus not found with ID: " + busNumber));
+    public BusResponseDTO updateBus(String busNumber, BusDTO busDTO) {
+        Bus bus = busRepository.findByBusNumber(busNumber)
+                .orElseThrow(()-> new ResourceNotFoundException("Bus not found with number: " + busNumber));
 
-        if (!existingBus.getBusNumber().equals(busDTO.getBusNumber())) {
-            boolean exists = busRepository.findByBusNumber(busDTO.getBusNumber()).isPresent();
-            if (exists) {
-                throw new RuntimeException("Bus number already exists: " + busDTO.getBusNumber());
-            }
-        }
-        existingBus.setSource(busDTO.getSource());
-        existingBus.setDestination(busDTO.getDestination());
-        existingBus.setBusNumber(busDTO.getBusNumber());
-        existingBus.setDate(busDTO.getDate());
-        existingBus.setTime(busDTO.getTime());
-        existingBus.setTotalSeats(busDTO.getTotalSeats());
+        bus.setSource(busDTO.getSource());
+        bus.setDestination(busDTO.getDestination());
+        bus.setDate(busDTO.getDate());
+        bus.setTime(busDTO.getDepartureTime());
+        bus.setTotalSeats(busDTO.getTotalSeats());
 
-        Bus updatedBus = busRepository.save(existingBus);
-        return toDto(updatedBus);
+        Bus updateBus = busRepository.save(bus);
+        return mapToBusResponseDTO(updateBus);
     }
+
+    public BusResponseDTO mapToBusResponseDTO(Bus bus) {
+
+        List<SeatDto> seatDto = bus.getSeats().stream().map(seat -> {
+            SeatDto s = new SeatDto();
+            s.setPrice(seat.getPrice());
+            s.setBusNumber(seat.getBus().getBusNumber());
+            return s;
+        }).toList();
+
+        BusResponseDTO response = new BusResponseDTO();
+        response.setBusNumber(bus.getBusNumber());
+        response.setSource(bus.getSource());
+        response.setDestination(bus.getDestination());
+        response.setDate(bus.getDate());
+        response.setDepartureTime(bus.getTime());
+        response.setTotalSeats(bus.getTotalSeats());
+        response.setSeats(seatDto);
+
+        return response;
+    }
+
+    @Override
+    public List<Bus> getAllBuses() {
+        return busRepository.findAll();
+
+    }
+
+//    @Override
+//    public BusDTO updateBus(String busNumber, BusDTO busDTO) {
+//        Bus existingBus = busRepository.findByBusNumber(busNumber)
+//                .orElseThrow(() -> new RuntimeException("Bus not found with ID: " + busNumber));
+//
+//
+//        existingBus.setSource(busDTO.getSource());
+//        existingBus.setDestination(busDTO.getDestination());
+//        existingBus.setBusNumber(busDTO.getBusNumber());
+//        existingBus.setDate(busDTO.getDate());
+//        existingBus.setTime(busDTO.getTime());
+//        existingBus.setTotalSeats(busDTO.getTotalSeats());
+//
+//        Bus updatedBus = busRepository.save(existingBus);
+//        return toDto(updatedBus);
+//    }
 
     private BusDTO toDto(Bus bus) {
         BusDTO dto = new BusDTO();
-        dto.setId(bus.getId());
         dto.setBusNumber(bus.getBusNumber());
         dto.setSource(bus.getSource());
         dto.setDestination(bus.getDestination());
         dto.setDate(bus.getDate());
-        dto.setTime(bus.getTime());
+        dto.setDepartureTime(bus.getTime());
         dto.setTotalSeats(bus.getTotalSeats());
         return dto;
     }
-
 
     @Override
     public void deleteBus(Long id) {
         Bus bus = busRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException("Bus not found with ID:"));
-        busRepository.deleteById(id);
+        busRepository.delete(bus);
     }
     @Override
-    public BusDTO getBusById(Long id) {
+    public BusResponseDTO getBusById(Long id) {
         Bus bus = busRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Bus not found with ID: " + id));
-        return mapToBusDto(bus);
+        return mapToBusResponseDTO(bus);
     }
 
     @Override
     public List<Bus> getAllBuses(String source, String destination, String busNumber) {
-        if (source != null && destination != null && busNumber != null) {
-            return busRepository.findBySourceAndDestinationAndBusNumber(source, destination, busNumber);
-        } else if (source != null && destination != null) {
-            return busRepository.findBySourceAndDestination(source, destination);
-        } else if (busNumber != null) {
+
+
+        if (busNumber != null && !busNumber.isBlank()) {
             return busRepository.findByBusNumber(busNumber)
                     .map(List::of)
-                    .orElse(List.of());
+                    .orElse(Collections.emptyList());
         }
+
+        if (source != null && !source.isBlank() && destination != null && !destination.isBlank()) {
+            return busRepository.findBySourceAndDestination(source, destination);
+        }
+
         return busRepository.findAll();
     }
+
 
 
 }

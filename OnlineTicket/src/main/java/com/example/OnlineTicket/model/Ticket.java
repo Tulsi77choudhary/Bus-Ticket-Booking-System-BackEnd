@@ -1,15 +1,15 @@
 package com.example.OnlineTicket.model;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+
 @Entity
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class Booking {
+public class Ticket {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,19 +24,12 @@ public class Booking {
     private Bus bus;
 
     @ElementCollection
-    @CollectionTable(
-            name = "booking_seats",
-            joinColumns = @JoinColumn(name = "booking_id")
-    )
-    @Column(name = "seat_number")
-    private List<String> seatNumbers;
-    private LocalDateTime bookingDate;
+    private List<String> seatNumbers = new ArrayList<>();
 
-    private double totalAmount;
+    private double totalPrice;
+
+    private LocalDateTime bookingTime;
 
     @Enumerated(EnumType.STRING)
-    private BookingStatus status;
-
-
+    private TicketStatus status;
 }
-

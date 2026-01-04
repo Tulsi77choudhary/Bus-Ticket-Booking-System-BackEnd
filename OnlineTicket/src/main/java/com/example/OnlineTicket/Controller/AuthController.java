@@ -26,14 +26,14 @@ public class AuthController {
         User savedUser = userService.signup(signupRequest);
         String token = jwtUtil.generateToken(savedUser.getEmail());
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new AuthResponse(token, "Signup Success",savedUser));
+                .body(new AuthResponse(token, "Signup Success"));
     }
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody SignupRequest loginRequest) throws ExecutionControl.UserException {
         User user = userService.login(loginRequest.getEmail(), loginRequest.getPassword());
         String token = jwtUtil.generateToken(user.getEmail());
-        return ResponseEntity.ok(new AuthResponse(token, "Login Success",user));
+        return ResponseEntity.ok(new AuthResponse(token, "Login Success"));
     }
 }
 

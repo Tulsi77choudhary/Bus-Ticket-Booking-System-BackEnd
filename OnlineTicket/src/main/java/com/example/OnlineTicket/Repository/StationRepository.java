@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface StationRepository extends JpaRepository<Station, Long> {
-    boolean existsByName(String name);
+    boolean existsByStationName(String stationName);
 }
 

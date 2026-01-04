@@ -1,26 +1,21 @@
 package com.example.OnlineTicket.Service;
 
 import com.example.OnlineTicket.DTO.BusDTO;
+import com.example.OnlineTicket.DTO.BusResponseDTO;
 import com.example.OnlineTicket.model.Bus;
 
 import java.util.List;
 
 public interface BusService {
-    Bus addBus(Bus bus);
-
+    Bus addBus(BusDTO busDto) throws RuntimeException;
     List<Bus> searchBuses(String busNumber, String source, String destination);
-
-
-    BusDTO updateBus(String busNumber, BusDTO busDTO);
-
+    BusResponseDTO updateBus(String busNumber, BusDTO busDTO);
     void deleteBus(Long id);
-
-    BusDTO getBusById(Long id);
-    //Optional<Seat> findByBusAndSeatNumber(Bus bus, String seatNumber);
-
+    BusResponseDTO getBusById(Long id);
 
     List<Bus> getAllBuses(String source, String destination, String busNumber);
 
-    BusDTO mapToBusDto(Bus bus);
+    BusResponseDTO mapToBusResponseDTO(Bus bus);
 
+    List<Bus> getAllBuses();
 }

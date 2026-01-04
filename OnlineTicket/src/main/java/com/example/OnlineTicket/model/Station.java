@@ -15,10 +15,13 @@ public class Station {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String name;
-    private String city;
-    private String state;
+    private String stationName;
+
+    private int stopOrder;
+
+    @ManyToOne
+    @JoinColumn(name = "route_id", nullable = false)
+    private Routes route;
 }
 
 

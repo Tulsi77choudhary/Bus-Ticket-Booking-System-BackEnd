@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class OnlineTicketApplication {
 
 	public static void main(String[] args) {
+
 		SpringApplication.run(OnlineTicketApplication.class, args);
 	}
 

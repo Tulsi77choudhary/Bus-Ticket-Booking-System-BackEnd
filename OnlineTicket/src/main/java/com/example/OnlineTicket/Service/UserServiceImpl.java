@@ -1,8 +1,9 @@
 package com.example.OnlineTicket.Service;
 
 import com.example.OnlineTicket.DTO.SignupRequest;
+import com.example.OnlineTicket.Repository.TicketRepository;
 import com.example.OnlineTicket.Repository.UserRepository;
-import com.example.OnlineTicket.model.Role;
+import com.example.OnlineTicket.model.Ticket;
 import com.example.OnlineTicket.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,6 +21,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private TicketRepository ticketRepository;
+
     @Override
     public User signup(SignupRequest request) {
 
@@ -32,8 +36,13 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setPhone(request.getPhone());
         user.setRole(request.getRole());
+        User savedUser = userRepository.save(user);
 
-        return userRepository.save(user);
+        Ticket ticket = new Ticket();
+        ticket.setUser(savedUser);
+
+        ticketRepository.save(ticket);
+        return savedUser;
     }
 
     @Override
@@ -74,6 +83,11 @@ public class UserServiceImpl implements UserService {
                     return userRepository.save(existingUser);
                 })
                 .orElseThrow(() -> new RuntimeException("User not found with id " + id));
+    }
+
+    @Override
+    public User findById(Long id) {
+        return null;
     }
 
 

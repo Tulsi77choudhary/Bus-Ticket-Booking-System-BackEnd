@@ -3,7 +3,6 @@ package com.example.OnlineTicket.Service;
 import com.example.OnlineTicket.DTO.RoutesDTO;
 import com.example.OnlineTicket.Repository.BusRepository;
 import com.example.OnlineTicket.Repository.RoutesRepository;
-import com.example.OnlineTicket.model.Bus;
 import com.example.OnlineTicket.model.Routes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,18 +53,6 @@ public class RoutesServiceImpl implements RoutesService {
         Routes existing = routesRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Route not found with id: " + id));
 
-        Bus bus = busRepository.findByBusNumber(dto.getBusNumber())
-                .orElseThrow(() -> new RuntimeException("Bus not found with number: " + dto.getBusNumber()));
-
-        existing.setBus(bus);
-        existing.setSource(dto.getSource());
-        existing.setDestination(dto.getDestination());
-        existing.setDate(dto.getDate());
-        existing.setTime(dto.getTime());
-        existing.setCost(dto.getCost());
-
-
-
         Routes updated = routesRepository.save(existing);
         return toDto(updated);
     }
@@ -82,21 +69,8 @@ public class RoutesServiceImpl implements RoutesService {
         return dto;
     }
 
-
-
     private Routes toEntity(RoutesDTO dto) {
-        Bus bus = busRepository.findByBusNumber(dto.getBusNumber())
-                .orElseThrow(() -> new RuntimeException("Bus not found with number: " + dto.getBusNumber()));
-
-        Routes route = new Routes();
-        route.setId(dto.getId());
-        route.setBus(bus);
-        route.setSource(dto.getSource());
-        route.setDestination(dto.getDestination());
-        route.setDate(dto.getDate());
-        route.setTime(dto.getTime());
-        route.setCost(dto.getCost());
-        return route;
+        return null;
     }
 
 

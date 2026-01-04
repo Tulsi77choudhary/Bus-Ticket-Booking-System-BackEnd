@@ -1,26 +1,20 @@
 package com.example.OnlineTicket.DTO;
 
+import com.example.OnlineTicket.model.SeatType;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
+@AllArgsConstructor
 public class SeatDto {
 
-    private String seatNumber;
-    private String seatType;
-    private double price;
+    private Long id;
     private String busNumber;
+    private String seatNumber;
+    private SeatType seatType;
+    private boolean available;
+    private double price;
+    public SeatDto() {}
 
-
-
-    public SeatDto(String seatNumber,String seatType,double price,String busNumber) {
-        this.seatNumber = seatNumber;
-        this.seatType = seatType;
-        this.price= price;
-        this.busNumber = busNumber;
-
-
-    }
 
 }

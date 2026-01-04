@@ -1,20 +1,15 @@
 package com.example.OnlineTicket.Service;
 
+import com.example.OnlineTicket.DTO.BookingRequest;
 import com.example.OnlineTicket.DTO.BookingResponse;
-import com.example.OnlineTicket.Repository.BookingRepository;
-import com.example.OnlineTicket.Repository.BusRepository;
-import com.example.OnlineTicket.Repository.SeatRepository;
-import com.example.OnlineTicket.Repository.UserRepository;
-import com.example.OnlineTicket.model.Booking;
-import com.example.OnlineTicket.model.Bus;
-import com.example.OnlineTicket.model.Seat;
-import com.example.OnlineTicket.model.User;
+import com.example.OnlineTicket.Repository.*;
+import com.example.OnlineTicket.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class BookingServiceImpl implements BookingService {
@@ -25,49 +20,86 @@ public class BookingServiceImpl implements BookingService {
     private UserRepository userRepository;
     @Autowired
     private SeatRepository seatRepository;
-
+    @Autowired
+    private PassengerRepository passengerRepository;
     @Autowired
     private BusRepository busRepository;
+    @Autowired
+    private TicketService ticketService;
+
+    private BookingResponse mapToBookingResponse(Booking bookingResponse) {
+
+        BookingResponse response = new BookingResponse();
+        response.setId(bookingResponse.getId());
+        response.setUserId(bookingResponse.getId());
+        response.setBusId(bookingResponse.getBus().getId());
+        response.setSeatNumbers(bookingResponse.getSeatNumbers());
+        response.setTotalAmount(bookingResponse.getTotalAmount());
+        response.setBookingDate(bookingResponse.getBookingDate());
+        response.setStatus(bookingResponse.getStatus());
+
+        return response;
+    }
 
     @Override
-    public BookingResponse bookTicket(Long userId, Long busId, List<String> seatNumbers) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    @Transactional
+    public BookingResponse bookTicket(BookingRequest request) {
 
-        Bus bus = busRepository.findById(busId)
-                .orElseThrow(() -> new RuntimeException("Bus not found"));
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(()-> new RuntimeException("User not found"));
 
-        for (String seatNumber : seatNumbers) {
-            Seat seat = seatRepository.findBySeatNumberAndBus(seatNumber, bus)
-                    .orElseThrow(() -> new RuntimeException("Seat not found: " + seatNumber));
+        Bus bus = busRepository.findById(request.getBusId())
+                .orElseThrow(() ->
+                        new RuntimeException("Bus not found"));
+        List<Seat> seats = seatRepository.findAllByBusAndSeatNumberIn(bus,request.getSeatNumbers());
 
-            seatRepository.save(seat);
+        if (seats.size() != request.getSeatNumbers().size()) {
+            throw new RuntimeException("Invalid seat selection");
         }
-        Booking booking = Booking.builder()
-                .user(user)
-                .bus(bus)
-                .seatNumbers(seatNumbers)
-                .seatsBooked(seatNumbers.size())
-                .bookingDate(LocalDateTime.now())
-                .status("CONFIRMED")
-                .build();
 
-        Booking saved = bookingRepository.save(booking);
-        return mapToResponse(saved);
+        if (seats.stream().anyMatch(seat -> !seat.isAvailable())) {
+            throw new RuntimeException("Seat already booked");
+        }
+
+        seats.forEach(seat -> seat.setAvailable(false));
+        seatRepository.saveAll(seats);
+
+        Booking booking = new Booking();
+        booking.setUser(user);
+        booking.setBus(bus);
+        booking.setSeatNumbers(request.getSeatNumbers());
+        booking.setTotalAmount(seats.stream()
+                .mapToDouble(Seat::getPrice)
+                .sum()
+        );
+        booking.setBookingDate(LocalDateTime.now());
+        booking.setStatus(BookingStatus.CONFIRMED);
+
+        bookingRepository.save(booking);
+
+
+        Passenger passenger = new Passenger();
+        passenger.setName(request.getPassengerName());
+        passenger.setAge(request.getPassengerAge());
+        passenger.setGender(request.getPassengerGender());
+        passenger.setEmail(request.getPassengerEmail());
+        passenger.setUser(user);
+        passenger.setBus(bus);
+        passenger.setBooking(booking);
+
+        passengerRepository.save(passenger);
+
+        return mapToBookingResponse(booking);
     }
 
     @Override
     public List<BookingResponse> getUserBookings(Long userId) {
-        return bookingRepository.findByUserId(userId).stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+       return null;
     }
 
     @Override
     public BookingResponse getBookingById(Long id) {
-        Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Booking not found with id " + id));
-        return mapToResponse(booking);
+        return null;
     }
 
     @Override
@@ -76,34 +108,13 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new RuntimeException("Booking not found with id " + id));
         bookingRepository.delete(booking);
     }
-
-    private BookingResponse mapToResponse(Booking booking) {
-        return BookingResponse.builder()
-                .id(booking.getId())
-                .userId(booking.getUser().getName())
-                .busId(booking.getBus().getBusNumber())
-                .seatNumbers(booking.getSeatNumbers())
-                .bookingDate(booking.getBookingDate())
-                .seatsBooked(booking.getSeatsBooked())
-                .status(booking.getStatus())
-                .build();
+    public List<BookingResponse> getBookingsByBus(Long busId) {
+        return null;
     }
 
-
-    public List<BookingResponse> getBookingsByBus(Long busId) {
-        List<Booking> bookings = bookingRepository.findByBusId(busId);
-
-        return bookings.stream()
-                .map(booking -> BookingResponse.builder()
-                        .id(booking.getId())
-                        .userId(booking.getUser().getName())
-                        .busId(booking.getBus().getBusNumber())
-                        .seatNumbers(booking.getSeatNumbers())
-                        .bookingDate(booking.getBookingDate())
-                        .seatsBooked(booking.getSeatsBooked())
-                        .status(booking.getStatus())
-                        .build()
-                ).collect(Collectors.toList());
+    @Override
+    public Booking bookTicket(User user, Passenger passengerDetail) {
+        return null;
     }
 
 

@@ -1,6 +1,7 @@
 package com.example.OnlineTicket.Service;
 
 import com.example.OnlineTicket.DTO.SeatDto;
+import com.example.OnlineTicket.Excaption.ResourceNotFoundException;
 import com.example.OnlineTicket.Repository.BusRepository;
 import com.example.OnlineTicket.Repository.SeatRepository;
 import com.example.OnlineTicket.model.Bus;
@@ -25,28 +26,16 @@ public class SeatServiceImpl implements SeatService {
 
     private SeatDto mapToDto(Seat seat) {
         SeatDto dto = new SeatDto();
+        dto.setId(seat.getId());
         dto.setSeatNumber(seat.getSeatNumber());
-        if (seat.getSeatType() != null) {
-            dto.setSeatType(seat.getSeatType().toUpperCase());
-        } else {
-            dto.setSeatType(null);
-        }
-        dto.setPrice(seat.getPrice());
+        dto.setSeatType(seat.getSeatType());
+        dto.setAvailable(seat.isAvailable());
         dto.setBusNumber(seat.getBus().getBusNumber());
+        dto.setPrice(seat.getPrice());
+
         return dto;
     }
 
-
-    private Seat mapToEntity(SeatDto dto) {
-        Seat seat = new Seat();
-        seat.setSeatNumber(dto.getSeatNumber());
-        seat.setSeatType(dto.getSeatType().toUpperCase());
-        Bus bus = busRepository.findByBusNumber(dto.getBusNumber())
-                .orElseThrow(() -> new RuntimeException("Bus not found: " + dto.getBusNumber()));
-        seat.setBus(bus);
-
-        return seat;
-    }
 
     @Override
     public List<SeatDto> getAllSeat() {
@@ -57,57 +46,47 @@ public class SeatServiceImpl implements SeatService {
     }
 
     @Override
-    public SeatDto createSeat(SeatDto seatDto) {
+    public SeatDto createSeat(SeatDto seatDto)  {
         Bus bus = busRepository.findByBusNumber(seatDto.getBusNumber())
-                .orElseThrow(() -> new RuntimeException("Bus not found: " + seatDto.getBusNumber()));
-
-        Optional<Seat> existing = seatRepository.findBySeatNumberAndBus(seatDto.getSeatNumber(), bus);
-        if (existing.isPresent()) {
-            throw new RuntimeException("Seat already exists for this bus");
-        }
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Bus not found with number: " + seatDto.getBusNumber())
+                );
+        Optional<Seat> existing = seatRepository.findBySeatNumberAndBus(seatDto.getSeatNumber(),bus);
+         if (existing.isPresent()){
+             throw new RuntimeException("Seat already exist for this bus");
+         }
 
         Seat seat = new Seat();
         seat.setSeatNumber(seatDto.getSeatNumber());
-        seat.setPrice(seat.getPrice());
+        seat.setSeatType(seatDto.getSeatType());
+        seat.setPrice(seatDto.getPrice());
+        seat.setAvailable(seatDto.isAvailable());
         seat.setBus(bus);
         Seat saved = seatRepository.save(seat);
-
-        return new SeatDto(
-                saved.getSeatNumber(),
-                saved.getSeatType(),
-                saved.getPrice(),
-                bus.getBusNumber()
-        );
-    }
-
-    @Override
-    public SeatDto toggleSeatAvailability(String seatNumber) {
-        return null;
+        return mapToDto(saved);
     }
 
     @Override
     public SeatDto updateSeat(String busNumber, String seatNumber, SeatDto seatDto) {
         Bus bus = busRepository.findByBusNumber(busNumber)
-                .orElseThrow(() -> new RuntimeException("Bus not found"));
+                .orElseThrow(()-> new RuntimeException("Bus not found with number: " + busNumber));
 
         Seat seat = seatRepository.findBySeatNumberAndBus(seatNumber,bus)
-                .orElseThrow(() -> new RuntimeException("Seat not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Seat not found with number: " + seatNumber + " for bus " + busNumber
+                ));
 
-        if (seatDto.getSeatType() != null){
-            seat.setSeatType(seatDto.getSeatType().toUpperCase());
-        }
-        seat.setSeatNumber(seatDto.getSeatNumber());
-        seat.setPrice(seatDto.getPrice());
-        bus.setBusNumber(busNumber);
-        Seat updated = seatRepository.save(seat);
+        if(seatDto.getSeatNumber() != null)  seat.setSeatNumber(seatDto.getSeatNumber());
+        if (seatDto.getSeatType() != null) seat.setSeatType(seatDto.getSeatType());
+        if (seatDto.getPrice() > 0) seat.setPrice(seatDto.getPrice());
 
-        return new SeatDto(
-                updated.getSeatNumber(),
-                updated.getSeatType(),
-                updated.getPrice(),
-                updated.getBus().getBusNumber()
-        );
+        seat.setAvailable(true);
+
+        Seat updatedSeat = seatRepository.save(seat);
+        return mapToDto(updatedSeat);
     }
+
 
     @Override
     public void deleteSeat(String seatNumber) {
@@ -115,41 +94,16 @@ public class SeatServiceImpl implements SeatService {
     }
 
     @Override
-    @Transactional
-    public List<SeatDto> selectSeats(String busNumber, List<String> seatNumbers) {
-
-        List<Seat> seats = seatRepository
-                .findByBus_BusNumberAndSeatNumberIn(busNumber, seatNumbers);
-
-        if (seats.isEmpty()) {
-            throw new RuntimeException("Seats not found");
-        }
-        for (Seat seat : seats) {
-            if (!seat.isAvailable()) {
-                throw new RuntimeException(
-                        "Seat already booked: " + seat.getSeatNumber()
-                );
-            }
-            seat.setAvailable(false);
-        }
-        seatRepository.saveAll(seats);
-
-        return seats.stream()
-                .map(this::mapToDto)
-                .toList();
-    }
-
-
-    @Override
     public List<SeatDto> getSeatsByBus(String busNumber) {
         Bus bus = busRepository.findByBusNumber(busNumber)
-                .orElseThrow(()-> new RuntimeException("Bus not found"));
+                .orElseThrow(() -> new RuntimeException("Bus not found: " + busNumber));
 
         return seatRepository.findByBus(bus)
                 .stream()
                 .map(this::mapToDto)
                 .toList();
     }
+
 
 }
 

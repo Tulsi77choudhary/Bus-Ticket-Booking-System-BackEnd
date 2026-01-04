@@ -3,19 +3,15 @@ package com.example.OnlineTicket.Controller;
 import com.example.OnlineTicket.DTO.BookingDto;
 import com.example.OnlineTicket.DTO.BookingRequest;
 import com.example.OnlineTicket.DTO.BookingResponse;
-import com.example.OnlineTicket.DTO.SeatDto;
+import com.example.OnlineTicket.model.User;
 import com.example.OnlineTicket.Repository.BookingRepository;
 import com.example.OnlineTicket.Repository.SeatRepository;
 import com.example.OnlineTicket.Service.BookingService;
-import com.example.OnlineTicket.Service.SeatService;
-import com.example.OnlineTicket.model.Booking;
-import com.example.OnlineTicket.model.Seat;
+import com.example.OnlineTicket.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -30,6 +26,18 @@ public class BookingController {
     @Autowired
     private BookingRepository bookingRepository;
 
+    @Autowired
+    private UserService userService;
+
+    @PostMapping
+    public ResponseEntity<BookingResponse> bookTicket(@RequestBody BookingRequest request) {
+
+        User user = userService.findById(request.getUserId());
+
+        BookingResponse response = bookingService.bookTicket(request);
+
+        return ResponseEntity.ok(response);
+    }
     @GetMapping("/api/bookings")
     public List<BookingDto> getAllBookings() {
         return bookingRepository.findAll()
@@ -37,17 +45,6 @@ public class BookingController {
                 .map(BookingDto::new)
                 .collect(Collectors.toList());
     }
-
-
-    @PostMapping
-    public BookingResponse bookTicket(@RequestBody BookingRequest bookingRequest) {
-        return bookingService.bookTicket(
-                bookingRequest.getUserId(),
-                bookingRequest.getBusId(),
-                bookingRequest.getSeatNumbers()
-        );
-    }
-
     @GetMapping("/user/{userId}")
     public List<BookingResponse> getUserBookings(@PathVariable Long userId) {
         return bookingService.getUserBookings(userId);
@@ -57,23 +54,10 @@ public class BookingController {
         return bookingService.getBookingsByBus(busId);
     }
 
-
     @GetMapping("booking/{id}")
     public BookingResponse getBookingById(@PathVariable Long id) {
         return bookingService.getBookingById(id);
     }
-//    @PutMapping("/seats/{seatNumber}/cancel")
-//    public ResponseEntity<SeatDto> cancelSeat(@PathVariable String seatNumber) {
-//        List<Seat> optionalSeat = seatRepository.findBySeatNumber(seatNumber);
-//        if (optionalSeat.isEmpty()) return ResponseEntity.notFound().build();
-//
-//        Seat seat = optionalSeat.get(0);
-//        if (seat.isAvailable()) return ResponseEntity.badRequest().body(new SeatDto(seat));
-//
-//        seat.setAvailable(true);
-//        seatRepository.save(seat);
-//        return ResponseEntity.ok(new SeatDto(seat));
-//    }
 
 
     @DeleteMapping("/{id}")

@@ -4,7 +4,6 @@ import com.example.OnlineTicket.Repository.StationRepository;
 import com.example.OnlineTicket.model.Station;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service
@@ -15,10 +14,7 @@ public class StationServiceImpl implements StationService {
 
     @Override
     public Station createStation(Station station) {
-        if (stationRepository.existsByName(station.getName())) {
-            throw new RuntimeException("Station with this name already exists.");
-        }
-        return stationRepository.save(station);
+        return null;
     }
 
     @Override
