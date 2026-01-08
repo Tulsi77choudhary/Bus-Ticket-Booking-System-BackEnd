@@ -25,7 +25,7 @@ public class BookingServiceImpl implements BookingService {
     @Autowired
     private BusRepository busRepository;
     @Autowired
-    private TicketService ticketService;
+    private TicketRepository ticketRepository;
 
     private BookingResponse mapToBookingResponse(Booking bookingResponse) {
 
@@ -76,7 +76,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus(BookingStatus.CONFIRMED);
 
         bookingRepository.save(booking);
-
+        //ticketRepository.save(booking);
 
         Passenger passenger = new Passenger();
         passenger.setName(request.getPassengerName());
@@ -109,13 +109,10 @@ public class BookingServiceImpl implements BookingService {
         bookingRepository.delete(booking);
     }
     public List<BookingResponse> getBookingsByBus(Long busId) {
+
         return null;
     }
 
-    @Override
-    public Booking bookTicket(User user, Passenger passengerDetail) {
-        return null;
-    }
 
 
 }

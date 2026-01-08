@@ -14,7 +14,6 @@ public class SeatDto {
     private SeatType seatType;
     private boolean available;
     private double price;
-    public SeatDto() {}
 
 
 }

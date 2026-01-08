@@ -7,15 +7,14 @@ import java.time.LocalTime;
 import java.util.List;
 
 @Data
-public class BusDTO {
+public class CreateBus {
 
-    private String busNumber;
     private String busName;
+    private String busNumber;
     private String source;
     private String destination;
     private LocalDate date;
-    private LocalTime departureTime;
-    private LocalTime arrivalTime;
+    private LocalTime Time;
     private BusType busType;
     private int totalSeats;
     private List<SeatDto> seats;

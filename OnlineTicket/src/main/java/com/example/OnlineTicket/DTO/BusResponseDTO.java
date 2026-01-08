@@ -9,6 +9,7 @@ import java.util.List;
 
 @Data
 public class BusResponseDTO {
+    private Long id;
     private String busNumber;
     private String source;
     private String destination;
@@ -23,6 +24,8 @@ public class BusResponseDTO {
     private int  totalSeats;
     private List<SeatDto> seats;
 
-    public BusResponseDTO() {
+
+    public BusResponseDTO(Long id, String busNumber, String source, String destination, int totalSeats) {
+
     }
 }

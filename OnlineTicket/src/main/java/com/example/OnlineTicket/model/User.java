@@ -29,10 +29,10 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Booking> bookings = new ArrayList<>();
+//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<Booking> bookings = new ArrayList<>();
 
-    @ToString.Exclude
-    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
-    private List<Passenger> passengers = new ArrayList<>();
+//    @ToString.Exclude
+//    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+//    private List<Passenger> passengers = new ArrayList<>();
 }

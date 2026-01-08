@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -24,47 +23,49 @@ public class SeatServiceImpl implements SeatService {
     @Autowired
     private BusRepository busRepository;
 
-    private SeatDto mapToDto(Seat seat) {
-        SeatDto dto = new SeatDto();
-        dto.setId(seat.getId());
-        dto.setSeatNumber(seat.getSeatNumber());
-        dto.setSeatType(seat.getSeatType());
-        dto.setAvailable(seat.isAvailable());
-        dto.setBusNumber(seat.getBus().getBusNumber());
-        dto.setPrice(seat.getPrice());
-
-        return dto;
-    }
-
-
     @Override
-    public List<SeatDto> getAllSeat() {
-        return seatRepository.findAll()
-                .stream()
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
+    public List<SeatDto> getAllSeats() {
+        List<Seat> seats = seatRepository.findAll();
+        return seats.stream()
+                .map(seat -> new SeatDto(
+                        seat.getId(),
+                        seat.getBus().getBusNumber(),
+                        seat.getSeatNumber(),
+                        seat.getSeatType(),
+                        seat.isAvailable(),
+                        seat.getPrice()
+                ))
+                .toList();
     }
 
     @Override
-    public SeatDto createSeat(SeatDto seatDto)  {
-        Bus bus = busRepository.findByBusNumber(seatDto.getBusNumber())
+    public SeatDto createSeat(SeatDto request)  {
+        Bus bus = busRepository.findByBusNumber(request.getBusNumber())
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Bus not found with number: " + seatDto.getBusNumber())
+                                "Bus not found with number: " + request.getBusNumber())
                 );
-        Optional<Seat> existing = seatRepository.findBySeatNumberAndBus(seatDto.getSeatNumber(),bus);
+        Optional<Seat> existing = seatRepository.findBySeatNumberAndBus(request.getSeatNumber(),bus);
          if (existing.isPresent()){
              throw new RuntimeException("Seat already exist for this bus");
          }
 
         Seat seat = new Seat();
-        seat.setSeatNumber(seatDto.getSeatNumber());
-        seat.setSeatType(seatDto.getSeatType());
-        seat.setPrice(seatDto.getPrice());
-        seat.setAvailable(seatDto.isAvailable());
+        seat.setSeatNumber(request.getSeatNumber());
+        seat.setSeatType(request.getSeatType());
+        seat.setPrice(request.getPrice());
+        seat.setAvailable(request.isAvailable());
         seat.setBus(bus);
-        Seat saved = seatRepository.save(seat);
-        return mapToDto(saved);
+
+        Seat savedSeat  = seatRepository.save(seat);
+        return new SeatDto(
+                savedSeat.getId(),
+                bus.getBusNumber(),
+                savedSeat.getSeatNumber(),
+                savedSeat.getSeatType(),
+                savedSeat.isAvailable(),
+                savedSeat.getPrice()
+        );
     }
 
     @Override
@@ -77,21 +78,35 @@ public class SeatServiceImpl implements SeatService {
                         "Seat not found with number: " + seatNumber + " for bus " + busNumber
                 ));
 
-        if(seatDto.getSeatNumber() != null)  seat.setSeatNumber(seatDto.getSeatNumber());
-        if (seatDto.getSeatType() != null) seat.setSeatType(seatDto.getSeatType());
-        if (seatDto.getPrice() > 0) seat.setPrice(seatDto.getPrice());
+       seat.setSeatType(seatDto.getSeatType());
+       seat.setPrice(seat.getPrice());
+       seat.setAvailable(seat.isAvailable());
 
-        seat.setAvailable(true);
+       Seat updatedSeat = seatRepository.save(seat);
 
-        Seat updatedSeat = seatRepository.save(seat);
-        return mapToDto(updatedSeat);
+        return new SeatDto(
+                updatedSeat.getId(),
+                bus.getBusNumber(),
+                updatedSeat.getSeatNumber(),
+                updatedSeat.getSeatType(),
+                updatedSeat.isAvailable(),
+                updatedSeat.getPrice()
+        );
+
     }
-
 
     @Override
-    public void deleteSeat(String seatNumber) {
-        seatRepository.deleteBySeatNumber(seatNumber);
+    public void deleteSeat(String busNumber, String seatNumber) {
+
+        Bus bus = busRepository.findByBusNumber(busNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("Bus not found"));
+
+        Seat seat = seatRepository.findBySeatNumberAndBus(seatNumber, bus)
+                .orElseThrow(() -> new ResourceNotFoundException("Seat not found"));
+
+        seatRepository.delete(seat);
     }
+
 
     @Override
     public List<SeatDto> getSeatsByBus(String busNumber) {
@@ -100,10 +115,16 @@ public class SeatServiceImpl implements SeatService {
 
         return seatRepository.findByBus(bus)
                 .stream()
-                .map(this::mapToDto)
+                .map(seat -> new SeatDto(
+                        seat.getId(),
+                        bus.getBusNumber(),
+                        seat.getSeatNumber(),
+                        seat.getSeatType(),
+                        seat.isAvailable(),
+                        seat.getPrice()
+                ))
                 .toList();
     }
-
 
 }
 

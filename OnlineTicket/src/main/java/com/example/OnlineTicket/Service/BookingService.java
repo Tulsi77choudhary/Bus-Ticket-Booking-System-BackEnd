@@ -21,5 +21,4 @@ public interface BookingService {
 
     List<BookingResponse> getBookingsByBus(Long busId);
 
-    Booking bookTicket(User user, Passenger passengerDetail);
 }

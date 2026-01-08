@@ -1,14 +1,16 @@
 package com.example.OnlineTicket.Controller;
 
-import com.example.OnlineTicket.DTO.BusDTO;
+
 import com.example.OnlineTicket.DTO.BusRequest;
 import com.example.OnlineTicket.DTO.BusResponseDTO;
-import com.example.OnlineTicket.Excaption.ResourceNotFoundException;
+import com.example.OnlineTicket.DTO.CreateBus;
+import com.example.OnlineTicket.Excaption.BusException;
 import com.example.OnlineTicket.Service.BusService;
 import com.example.OnlineTicket.model.Bus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,48 +21,48 @@ import java.util.List;
 public class BusController {
     @Autowired
     private BusService busService;
+
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/bus")
-    public ResponseEntity<Bus> addBus(@RequestBody BusDTO busdto) {
-        Bus busSave = busService.addBus(busdto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(busSave);
+    public ResponseEntity<Bus> createBus(@RequestBody CreateBus request) {
+        Bus bus = busService.createBus(request);
+        return ResponseEntity.ok(bus);
     }
+
+    @PreAuthorize("hasAnyRole('CUSTOMER','ADMIN')")
     @PostMapping("/search")
-    public ResponseEntity<List<BusResponseDTO>> searchBuses(@RequestBody BusRequest request) {
+    public ResponseEntity<List<Bus>> searchBuses(@RequestBody BusRequest request) throws BusException {
 
-        List<Bus> buses = busService.searchBuses(
-                request.getBusNumber(),
-                request.getSource(),
-                request.getDestination()
-        );
-        if (buses.isEmpty()) {
-            throw new ResourceNotFoundException("No buses found for given search criteria");
-        }
+        List<Bus> bus = busService.searchBuses(request);
 
-        List<BusResponseDTO> response = buses.stream()
-                .map(busService::mapToBusResponseDTO)
-                .toList();
-
-        return new  ResponseEntity<>(response,HttpStatus.OK);
+        return new  ResponseEntity<>(bus,HttpStatus.OK);
 
     }
+    @PreAuthorize("hasAnyRole('CUSTOMER','ADMIN')")
     @GetMapping
-    public ResponseEntity<List<BusResponseDTO>> getAllBuses() {
+    public ResponseEntity<List<Bus>> getAllBuses() {
         List<Bus> buses = busService.getAllBuses();
-
-        List<BusResponseDTO> response = buses.stream()
-                .map(busService::mapToBusResponseDTO)
-                .toList();
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(buses);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{busNumber}")
-    public ResponseEntity<BusResponseDTO> updateBus(@PathVariable String busNumber, @RequestBody BusDTO busDTO) {
+    public ResponseEntity<BusResponseDTO> updateBus(@PathVariable String busNumber, @RequestBody CreateBus busDTO) {
         BusResponseDTO updated = busService.updateBus(busNumber, busDTO);
         return ResponseEntity.ok(updated);
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/cancel/{id}")
+    public ResponseEntity<String> cancel(@PathVariable Long id){
+        busService.cancelBus(id);
+        return ResponseEntity.ok("Bus cancelled successfully with ID: " + id);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteBus(@PathVariable Long id) {
-        busService.deleteBus(id);
-        return ResponseEntity.ok("Bus deleted successfully with ID: " + id);
+    public ResponseEntity<String> deleteBus(@PathVariable String busNumber) {
+        busService.deleteBus(busNumber);
+        return ResponseEntity.ok("Bus deleted successfully with ID: " + busNumber);
     }
 }

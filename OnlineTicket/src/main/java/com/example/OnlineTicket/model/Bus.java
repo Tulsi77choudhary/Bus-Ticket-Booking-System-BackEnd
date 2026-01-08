@@ -34,6 +34,10 @@ public class Bus {
     private LocalDate date;
     private int totalSeats;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private BusStatus status;
+
     @OneToMany(mappedBy = "bus", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Seat> seats = new ArrayList<>();
 

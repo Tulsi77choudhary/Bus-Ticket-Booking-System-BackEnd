@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,10 +34,11 @@ public interface BusRepository extends JpaRepository<Bus, Long> {
             @Param("source") String source,
             @Param("destination") String destination
     );
-    List<Bus> findBySource(String source);
-    List<Bus> findByDestination(String destination);
-    List<Bus> findBySourceAndDestinationAndBusNumber(String source, String destination, String busNumber);
 
-    Optional<Bus> findByBusNumberIgnoreCase(String busNumber);
+    List<Bus> findBySourceAndDestinationAndTravelDate(
+            String source,
+            String destination,
+            LocalDate travelDate
+    );
 }
 

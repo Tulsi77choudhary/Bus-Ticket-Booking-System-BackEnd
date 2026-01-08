@@ -3,6 +3,9 @@ package com.example.OnlineTicket.Controller;
 import com.example.OnlineTicket.DTO.BookingDto;
 import com.example.OnlineTicket.DTO.BookingRequest;
 import com.example.OnlineTicket.DTO.BookingResponse;
+import com.example.OnlineTicket.Excaption.BookingException;
+import com.example.OnlineTicket.Excaption.BusException;
+import com.example.OnlineTicket.Excaption.UserException;
 import com.example.OnlineTicket.model.User;
 import com.example.OnlineTicket.Repository.BookingRepository;
 import com.example.OnlineTicket.Repository.SeatRepository;
@@ -30,25 +33,27 @@ public class BookingController {
     private UserService userService;
 
     @PostMapping
-    public ResponseEntity<BookingResponse> bookTicket(@RequestBody BookingRequest request) {
+    public ResponseEntity<BookingResponse> bookTicket(@RequestBody BookingRequest request,@RequestHeader("Authorization") String jwt) throws BookingException, UserException, BusException {
 
         User user = userService.findById(request.getUserId());
-
         BookingResponse response = bookingService.bookTicket(request);
 
         return ResponseEntity.ok(response);
     }
+
     @GetMapping("/api/bookings")
-    public List<BookingDto> getAllBookings() {
+    public List<BookingDto> getAllBookings() throws BookingException {
         return bookingRepository.findAll()
                 .stream()
                 .map(BookingDto::new)
                 .collect(Collectors.toList());
     }
+
     @GetMapping("/user/{userId}")
     public List<BookingResponse> getUserBookings(@PathVariable Long userId) {
         return bookingService.getUserBookings(userId);
     }
+
     @GetMapping("/bus/{busId}")
     public List<BookingResponse> getBookingsByBus(@PathVariable Long busId) {
         return bookingService.getBookingsByBus(busId);

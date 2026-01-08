@@ -14,7 +14,6 @@ public interface SeatRepository extends JpaRepository<Seat,Long> {
     List<Seat> findByBusNumber(@Param("busNumber") String busNumber);
 
     Optional<Seat> findBySeatNumber(String seatNumber);
-    void deleteBySeatNumber(String seatNumber);
     List<Seat> findByBus(Bus bus);
     List<Seat> findAllByBusAndSeatNumberIn(Bus bus, List<String> seatNumbers);
 
@@ -23,4 +22,5 @@ public interface SeatRepository extends JpaRepository<Seat,Long> {
                                              @Param("seatNumbers") List<String> seatNumbers);
 
     Optional<Seat> findBySeatNumberAndBus(String seatNumber, Bus bus);
+
 }

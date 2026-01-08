@@ -1,21 +1,23 @@
 package com.example.OnlineTicket.Service;
 
-import com.example.OnlineTicket.DTO.BusDTO;
+import com.example.OnlineTicket.DTO.BusRequest;
+import com.example.OnlineTicket.DTO.CreateBus;
 import com.example.OnlineTicket.DTO.BusResponseDTO;
+import com.example.OnlineTicket.Excaption.BusException;
 import com.example.OnlineTicket.model.Bus;
+import jakarta.transaction.Transactional;
 
 import java.util.List;
 
 public interface BusService {
-    Bus addBus(BusDTO busDto) throws RuntimeException;
-    List<Bus> searchBuses(String busNumber, String source, String destination);
-    BusResponseDTO updateBus(String busNumber, BusDTO busDTO);
-    void deleteBus(Long id);
-    BusResponseDTO getBusById(Long id);
-
-    List<Bus> getAllBuses(String source, String destination, String busNumber);
-
-    BusResponseDTO mapToBusResponseDTO(Bus bus);
+    Bus createBus(CreateBus request) throws RuntimeException;
+    List<Bus> searchBuses(BusRequest request) throws BusException;
+    BusResponseDTO updateBus(String busNumber, CreateBus request);
 
     List<Bus> getAllBuses();
+
+    void deleteBus(String busNumber);
+
+    @Transactional
+    void cancelBus(Long busId);
 }
