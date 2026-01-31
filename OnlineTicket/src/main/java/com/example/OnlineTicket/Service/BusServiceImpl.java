@@ -39,6 +39,7 @@ public class BusServiceImpl implements BusService{
        bus.setTotalSeats(request.getTotalSeats());
        bus.setTime(request.getTime());
        bus.setDate(request.getDate());
+       bus.setStatus(BusStatus.ACTIVE);
 
        return busRepository.save(bus);
     }

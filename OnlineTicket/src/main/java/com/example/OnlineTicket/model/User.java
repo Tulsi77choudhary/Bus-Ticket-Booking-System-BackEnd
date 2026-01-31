@@ -1,6 +1,10 @@
 package com.example.OnlineTicket.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,9 +26,15 @@ public class User {
     private String lastName;
 
     private String password;
+
     @Column(unique = true, nullable = false)
     private String email;
 
+    @NotBlank(message = "Phone number is required")
+    @Pattern(
+            regexp = "^[0-9]{10}$",
+            message = "Phone number must be exactly 10 digits"
+    )
     private String phone;
 
     @Enumerated(EnumType.STRING)
