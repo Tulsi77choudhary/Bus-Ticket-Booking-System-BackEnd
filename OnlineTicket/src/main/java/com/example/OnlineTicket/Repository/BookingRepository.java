@@ -5,9 +5,12 @@ import com.example.OnlineTicket.model.Bus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByUserId(Long userId);
     List<Booking> findByBusId(Long busId);
     List<Booking> findByBus(Bus bus);
+
+    Optional<Booking> findById(Long id);
 }

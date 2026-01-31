@@ -45,10 +45,9 @@ public class BusServiceImpl implements BusService{
 
     @Override
     public List<Bus> searchBuses(BusRequest request) {
-        List<Bus> buses = busRepository.findBySourceAndDestinationAndTravelDate(
-                request.getBusNumber(),
+        List<Bus> buses = busRepository.findBySourceAndDestination(
                 request.getSource(),
-                request.getTravelDate()
+                request.getDestination()
         );
         if (buses.isEmpty()){
             throw new RuntimeException("No buses found");
@@ -62,12 +61,18 @@ public class BusServiceImpl implements BusService{
         Bus bus = busRepository.findByBusNumber(busNumber)
                 .orElseThrow(()-> new ResourceNotFoundException("Bus not found with number: " + busNumber));
 
+        bus.setBusName(busDTO.getBusName());
+        bus.setBusNumber(busDTO.getBusNumber());
         bus.setSource(busDTO.getSource());
         bus.setDestination(busDTO.getDestination());
+        bus.setBusType(busDTO.getBusType());
         bus.setDate(busDTO.getDate());
         bus.setTime(busDTO.getTime());
         bus.setTotalSeats(busDTO.getTotalSeats());
 
+        if (busDTO.getStatus() != null) {
+            bus.setStatus(busDTO.getStatus());
+        }
         Bus updatedBus = busRepository.save(bus);
 
         return new BusResponseDTO(
@@ -75,9 +80,13 @@ public class BusServiceImpl implements BusService{
                 updatedBus.getBusNumber(),
                 updatedBus.getSource(),
                 updatedBus.getDestination(),
-                updatedBus.getTotalSeats()
-        );
+                updatedBus.getDate(),
+                updatedBus.getTime(),
+                updatedBus.getTime(),
+                updatedBus.getTotalSeats(),
+                updatedBus.getStatus()
 
+        );
     }
 
 

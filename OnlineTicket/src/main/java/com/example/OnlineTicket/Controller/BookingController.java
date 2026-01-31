@@ -2,6 +2,7 @@ package com.example.OnlineTicket.Controller;
 
 import com.example.OnlineTicket.DTO.BookingDto;
 import com.example.OnlineTicket.DTO.BookingRequest;
+import com.example.OnlineTicket.DTO.BookingRequestDto;
 import com.example.OnlineTicket.DTO.BookingResponse;
 import com.example.OnlineTicket.Excaption.BookingException;
 import com.example.OnlineTicket.Excaption.BusException;
@@ -12,14 +13,16 @@ import com.example.OnlineTicket.Repository.SeatRepository;
 import com.example.OnlineTicket.Service.BookingService;
 import com.example.OnlineTicket.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/bookings")
-@CrossOrigin(origins = "http://127.0.0.1:5500")
+@CrossOrigin(origins = "http://localhost:5173")
 public class BookingController {
 
     @Autowired
@@ -33,15 +36,17 @@ public class BookingController {
     private UserService userService;
 
     @PostMapping
-    public ResponseEntity<BookingResponse> bookTicket(@RequestBody BookingRequest request,@RequestHeader("Authorization") String jwt) throws BookingException, UserException, BusException {
+    public ResponseEntity<BookingResponse> bookTicket(
+            @RequestBody BookingRequest request,
+            @RequestHeader("Authorization") String jwt) throws BookingException, UserException, BusException {
 
-        User user = userService.findById(request.getUserId());
-        BookingResponse response = bookingService.bookTicket(request);
+        User user = userService.findUserProfileByJwt(jwt);
+        BookingResponse response = bookingService.bookTicket(request,user);
 
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/api/bookings")
+    @GetMapping("/all/bookings")
     public List<BookingDto> getAllBookings() throws BookingException {
         return bookingRepository.findAll()
                 .stream()
@@ -59,7 +64,7 @@ public class BookingController {
         return bookingService.getBookingsByBus(busId);
     }
 
-    @GetMapping("booking/{id}")
+    @GetMapping("/{id}")
     public BookingResponse getBookingById(@PathVariable Long id) {
         return bookingService.getBookingById(id);
     }

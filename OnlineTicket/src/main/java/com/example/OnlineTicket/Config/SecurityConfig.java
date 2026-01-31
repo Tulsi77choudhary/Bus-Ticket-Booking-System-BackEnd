@@ -33,14 +33,10 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-
                         .requestMatchers("/api/buses/**").permitAll()
-                        .requestMatchers("/api/seats/**").permitAll()
+                        .requestMatchers("/api/seat/**").permitAll()
                         .requestMatchers("/api/bookings/**").permitAll()
-
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/customer/**").hasRole("CUSTOMER")
-
+                        .requestMatchers("/api/users/profile").permitAll()
                         .anyRequest().authenticated()
                 )
 

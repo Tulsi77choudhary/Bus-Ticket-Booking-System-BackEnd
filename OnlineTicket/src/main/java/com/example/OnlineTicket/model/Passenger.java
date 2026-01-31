@@ -1,9 +1,12 @@
 package com.example.OnlineTicket.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -31,5 +34,9 @@ public class Passenger {
     @ManyToOne
     @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
+
+    @OneToMany(mappedBy = "passenger", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<BookingReview> bookingReviews;
 
 }

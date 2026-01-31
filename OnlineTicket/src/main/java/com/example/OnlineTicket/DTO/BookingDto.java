@@ -17,6 +17,7 @@ public class BookingDto {
         this.id = booking.getId();
         this.userName = booking.getUser().getName();
         this.busNumber = booking.getBus().getBusNumber();
+        this.seatNumbers = booking.getSeatNumbers();
         this.bookingDate = booking.getBookingDate();
 
     }

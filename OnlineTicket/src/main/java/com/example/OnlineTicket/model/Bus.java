@@ -1,5 +1,6 @@
 package com.example.OnlineTicket.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,6 +31,8 @@ public class Bus {
 
     @Enumerated(EnumType.STRING)
     private BusType busType;
+
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime time;
     private LocalDate date;
     private int totalSeats;
@@ -38,10 +41,13 @@ public class Bus {
     @Column(nullable = false)
     private BusStatus status;
 
-    @OneToMany(mappedBy = "bus", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Seat> seats = new ArrayList<>();
+    @OneToMany(mappedBy = "bus", cascade = CascadeType.ALL)
+    private List<Seat> seats;
 
-    @OneToMany(mappedBy = "bus", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Booking> bookings = new ArrayList<>();
+
+
+
+//    @OneToMany(mappedBy = "bus", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<Booking> bookings = new ArrayList<>();
 
 }

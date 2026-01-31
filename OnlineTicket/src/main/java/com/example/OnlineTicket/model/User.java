@@ -1,5 +1,6 @@
 package com.example.OnlineTicket.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,10 +30,8 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<Booking> bookings = new ArrayList<>();
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Booking> bookings = new ArrayList<>();
 
-//    @ToString.Exclude
-//    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
-//    private List<Passenger> passengers = new ArrayList<>();
 }

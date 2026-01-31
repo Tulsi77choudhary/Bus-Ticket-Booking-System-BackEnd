@@ -1,17 +1,15 @@
 package com.example.OnlineTicket.Service;
 
 import com.example.OnlineTicket.DTO.BookingRequest;
+import com.example.OnlineTicket.DTO.BookingRequestDto;
 import com.example.OnlineTicket.DTO.BookingResponse;
-import com.example.OnlineTicket.model.Booking;
-import com.example.OnlineTicket.model.Passenger;
 import com.example.OnlineTicket.model.User;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 public interface BookingService {
 
-    BookingResponse bookTicket(BookingRequest request);
+    BookingResponse bookTicket(BookingRequest request, User user);
 
     List<BookingResponse> getUserBookings(Long userId);
 
@@ -21,4 +19,5 @@ public interface BookingService {
 
     List<BookingResponse> getBookingsByBus(Long busId);
 
+    BookingRequestDto getByBookingId(Long bookingId);
 }

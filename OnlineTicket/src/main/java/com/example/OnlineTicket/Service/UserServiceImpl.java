@@ -1,6 +1,8 @@
 package com.example.OnlineTicket.Service;
 
+import com.example.OnlineTicket.Config.JwtUtil;
 import com.example.OnlineTicket.DTO.SignupRequest;
+import com.example.OnlineTicket.Excaption.UserException;
 import com.example.OnlineTicket.Repository.TicketRepository;
 import com.example.OnlineTicket.Repository.UserRepository;
 import com.example.OnlineTicket.model.Ticket;
@@ -24,6 +26,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private TicketRepository ticketRepository;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @Override
     public User signup(SignupRequest request) {
 
@@ -32,6 +37,7 @@ public class UserServiceImpl implements UserService {
         }
         User user = new User();
         user.setName(request.getName());
+        user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setPhone(request.getPhone());
@@ -86,8 +92,25 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User findById(Long id) {
-        return null;
+    public User findById(Long id) throws UserException {
+
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserException("User not found with id" + id));
+    }
+
+    @Override
+    public User findUserProfileByJwt(String token) {
+
+        if (token == null || !token.startsWith("Bearer ")) {
+            throw new RuntimeException("Invalid Authorization header");
+        }
+
+        token = token.substring(7).trim();
+
+        String email = jwtUtil.extractUsername(token);
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(()-> new RuntimeException("User not found for this token"));
     }
 
 

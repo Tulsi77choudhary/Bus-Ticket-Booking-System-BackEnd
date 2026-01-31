@@ -1,9 +1,13 @@
 package com.example.OnlineTicket.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Entity
 @Data
@@ -17,7 +21,8 @@ public class Seat {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "bus_id", nullable = false)
+    @JoinColumn(name = "bus_id")
+    @JsonBackReference
     private Bus bus;
 
     @Column(nullable = false)

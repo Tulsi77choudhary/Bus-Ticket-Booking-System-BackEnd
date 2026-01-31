@@ -54,7 +54,7 @@ public class SeatServiceImpl implements SeatService {
         seat.setSeatNumber(request.getSeatNumber());
         seat.setSeatType(request.getSeatType());
         seat.setPrice(request.getPrice());
-        seat.setAvailable(request.isAvailable());
+        seat.setAvailable(true);
         seat.setBus(bus);
 
         Seat savedSeat  = seatRepository.save(seat);
@@ -79,8 +79,8 @@ public class SeatServiceImpl implements SeatService {
                 ));
 
        seat.setSeatType(seatDto.getSeatType());
-       seat.setPrice(seat.getPrice());
-       seat.setAvailable(seat.isAvailable());
+       seat.setPrice(seatDto.getPrice());
+       seat.setAvailable(seatDto.isAvailable());
 
        Seat updatedSeat = seatRepository.save(seat);
 

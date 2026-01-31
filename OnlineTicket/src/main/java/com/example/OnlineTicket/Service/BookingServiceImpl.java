@@ -1,6 +1,7 @@
 package com.example.OnlineTicket.Service;
 
 import com.example.OnlineTicket.DTO.BookingRequest;
+import com.example.OnlineTicket.DTO.BookingRequestDto;
 import com.example.OnlineTicket.DTO.BookingResponse;
 import com.example.OnlineTicket.Repository.*;
 import com.example.OnlineTicket.model.*;
@@ -31,7 +32,7 @@ public class BookingServiceImpl implements BookingService {
 
         BookingResponse response = new BookingResponse();
         response.setId(bookingResponse.getId());
-        response.setUserId(bookingResponse.getId());
+        response.setUserId(bookingResponse.getUser().getId());
         response.setBusId(bookingResponse.getBus().getId());
         response.setSeatNumbers(bookingResponse.getSeatNumbers());
         response.setTotalAmount(bookingResponse.getTotalAmount());
@@ -43,10 +44,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
-    public BookingResponse bookTicket(BookingRequest request) {
-
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(()-> new RuntimeException("User not found"));
+    public BookingResponse bookTicket(BookingRequest request, User user) {
 
         Bus bus = busRepository.findById(request.getBusId())
                 .orElseThrow(() ->
@@ -76,7 +74,6 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus(BookingStatus.CONFIRMED);
 
         bookingRepository.save(booking);
-        //ticketRepository.save(booking);
 
         Passenger passenger = new Passenger();
         passenger.setName(request.getPassengerName());
@@ -94,12 +91,22 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingResponse> getUserBookings(Long userId) {
-       return null;
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return user.getBookings()
+                .stream()
+                .map(this::mapToBookingResponse)
+                .toList();
     }
 
     @Override
     public BookingResponse getBookingById(Long id) {
-        return null;
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(()-> new RuntimeException("Booking not found"));
+        return mapToBookingResponse(booking);
+
     }
 
     @Override
@@ -114,5 +121,29 @@ public class BookingServiceImpl implements BookingService {
     }
 
 
+    @Override
+    public BookingRequestDto getByBookingId(Long bookingId) {
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        return BookingRequestDto.builder()
+                .bookingId(booking.getId())
+                .userName(booking.getUser().getName())
+                .userEmail(booking.getUser().getEmail())
+                .busNumber(booking.getBus().getBusNumber())
+                .busName(booking.getBus().getBusName())
+                .from(booking.getBus().getSource())
+                .to(booking.getBus().getDestination())
+                .seats(
+                        booking.getSeatNumbers()
+                )
+                .totalAmount(booking.getTotalAmount())
+                .status(booking.getStatus())
+                .bookingDate(booking.getBookingDate())
+                .build();
+    }
 
 }
+
+

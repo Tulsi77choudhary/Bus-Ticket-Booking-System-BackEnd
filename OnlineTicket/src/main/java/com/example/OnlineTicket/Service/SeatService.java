@@ -1,7 +1,6 @@
 package com.example.OnlineTicket.Service;
 
 import com.example.OnlineTicket.DTO.SeatDto;
-import com.example.OnlineTicket.model.Seat;
 
 import java.util.List;
 
