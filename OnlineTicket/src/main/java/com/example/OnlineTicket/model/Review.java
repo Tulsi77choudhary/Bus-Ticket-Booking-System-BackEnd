@@ -7,13 +7,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalTime;
+
 @Entity
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "booking_review")
-public class BookingReview {
+public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,8 +24,11 @@ public class BookingReview {
     @JoinColumn(name = "bus_id", nullable = false)
     private Bus bus;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "passenger_id", nullable = false)
-    @JsonBackReference
-    private Passenger passenger;
+    @Column
+    private String review;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+    private LocalTime createAt;
 }

@@ -37,6 +37,6 @@ public class Passenger {
 
     @OneToMany(mappedBy = "passenger", cascade = CascadeType.ALL)
     @JsonManagedReference
-    private List<BookingReview> bookingReviews;
+    private List<Review> bookingReviews;
 
 }

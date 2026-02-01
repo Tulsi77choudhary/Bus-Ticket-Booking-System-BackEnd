@@ -20,4 +20,6 @@ public interface BusService {
 
     @Transactional
     void cancelBus(Long busId);
+
+    Bus findBusbyId(Long busId);
 }
